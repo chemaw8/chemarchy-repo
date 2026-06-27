@@ -15,19 +15,33 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
 
 1. **Confía en la llave + instala el keyring** (ancla de confianza):
    ```bash
-   curl -LO https://github.com/chemaw8/chemarchy-repo/releases/download/x86_64/chemarchy-keyring-20260626-1-any.pkg.tar.zst
+   curl -LO https://github.com/chemaw8/chemarchy-repo/releases/download/edge/chemarchy-keyring-20260626-1-any.pkg.tar.zst
    sudo pacman -U chemarchy-keyring-20260626-1-any.pkg.tar.zst   # importa la pubkey + pacman-key --populate chemarchy
    ```
-2. **Añade el bloque** a `/etc/pacman.conf` (después de core/extra/multilib):
+
+2. **Elige el canal de updates:**
+
+   *Opción A (recomendada):*
+   ```bash
+   chemarchy-channel-set <canal>   # stable, rc, o edge
+   ```
+
+   *Opción B (manual):*
+   Añade a `/etc/pacman.conf` (después de core/extra/multilib):
    ```ini
    [chemarchy]
    SigLevel = Required DatabaseRequired
-   Server = https://github.com/chemaw8/chemarchy-repo/releases/download/$arch
+   Include = /etc/pacman.d/chemarchy-channel.conf
    ```
-3. **Sincroniza e instala**: `sudo pacman -Sy && sudo pacman -S chemarchy`
+   Crea `/etc/pacman.d/chemarchy-channel.conf` reemplazando `<canal>` con `stable`, `rc`, o `edge`:
+   ```ini
+   Server = https://github.com/chemaw8/chemarchy-repo/releases/download/<canal>/x86_64
+   ```
 
-> `$arch` se expande a `x86_64` (el tag del release). La db y cada paquete se
-> verifican con `SigLevel=Required` contra la llave de arriba.
+3. **Sincroniza e instala**: `sudo pacman -Syyuu && sudo pacman -S chemarchy`
+
+> Arquitectura `x86_64`. El canal (`stable`, `rc`, o `edge`) es el tag del release en GitHub.
+> La db y cada paquete se verifican con `SigLevel=Required` contra la llave de arriba.
 
 ## Personalización
 
