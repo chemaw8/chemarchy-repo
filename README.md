@@ -40,6 +40,19 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
 
 3. **Sincroniza e instala**: `sudo pacman -Syyuu && sudo pacman -S chemarchy`
 
+4. **Instala el resto (AUR + servicios)** — el glass blur, los temas Catppuccin y spicetify son AUR:
+   ```bash
+   chemarchy-bootstrap all
+   ```
+
+Listo: `Super+/` abre el cheatsheet · `theme pick` cambia de tema · `chemarchy-update` actualiza.
+
+### ¿Quién eres?
+
+- **Otra persona** (sin invitación) → es justo lo de arriba (pasos 1-4). El distro completo, público.
+- **Colaborador invitado** → además: `gh auth login` · `chemarchy-channel-set --personal on <owner/repo>` · `chemarchy-update` (baja la capa personal del repo privado al que te invitaron).
+- **El dueño** → setup completo con `chemarchy replicate` (overlay + secretos restic + vault).
+
 > Arquitectura `x86_64`. El canal (`stable`, `rc`, o `edge`) es el tag del release en GitHub.
 > La db y cada paquete se verifican con `SigLevel=Required` contra la llave de arriba.
 
