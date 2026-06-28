@@ -19,24 +19,14 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
    sudo pacman -U chemarchy-keyring-20260626-1-any.pkg.tar.zst   # importa la pubkey + pacman-key --populate chemarchy
    ```
 
-2. **Elige el canal de updates:**
-
-   *Opción A (recomendada):*
-   ```bash
-   chemarchy-channel-set <canal>   # stable, rc, o edge
-   ```
-
-   *Opción B (manual):*
-   Añade a `/etc/pacman.conf` (después de core/extra/multilib):
+2. **Añade el repo a `/etc/pacman.conf`** (después de core/extra/multilib) reemplazando `<canal>` por `stable`, `rc`, o `edge`:
    ```ini
    [chemarchy]
    SigLevel = Required DatabaseRequired
-   Include = /etc/pacman.d/chemarchy-channel.conf
-   ```
-   Crea `/etc/pacman.d/chemarchy-channel.conf` reemplazando `<canal>` con `stable`, `rc`, o `edge`:
-   ```ini
    Server = https://github.com/chemaw8/chemarchy-repo/releases/download/<canal>/x86_64
    ```
+   > En el primer install hazlo a mano: `chemarchy-channel-set` aún no existe (viene con el meta).
+   > Una vez instalado, para cambiar de canal: `chemarchy-channel-set <stable|rc|edge>`.
 
 3. **Sincroniza e instala**: `sudo pacman -Syyuu && sudo pacman -S chemarchy`
 
