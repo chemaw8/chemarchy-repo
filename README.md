@@ -35,7 +35,8 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
    chemarchy-bootstrap all
    ```
 
-Listo: `Super+/` abre el cheatsheet · `theme pick` cambia de tema · `chemarchy-update` actualiza.
+**Cierra sesión y vuelve a entrar** (o reinicia) para que apliquen tema/KWin/atajos KDE. Luego:
+`Super+/` abre el cheatsheet · `theme pick` cambia de tema · `chemarchy-update` actualiza.
 
 ### ¿Quién eres?
 
