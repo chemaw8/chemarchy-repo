@@ -11,6 +11,23 @@ FPR    9019 9772 56F9 F5CD D490  7C02 069C A591 52A9 E92A
 UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
 ```
 
+## Instalar (1 comando)
+
+Sobre un **CachyOS/Arch + KDE** existente:
+```bash
+curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh | bash
+```
+Inspeccionable / con flags:
+```bash
+curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh -o install.sh; less install.sh; bash install.sh
+curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh | bash -s -- --channel rc --no-extras
+CHEMARCHY_CHANNEL=edge curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh | bash
+```
+El asistente de personalización corre en tu **siguiente inicio de sesión**.
+(Alterna raw: `https://raw.githubusercontent.com/chemaw8/chemarchy-repo/main/install.sh`.)
+
+<details><summary><b>Instalación manual</b> (avanzada, paso a paso)</summary>
+
 ## Añadir el repo
 
 1. **Confía en la llave + instala el keyring** (ancla de confianza):
@@ -23,7 +40,7 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
    ```ini
    [chemarchy]
    SigLevel = Required DatabaseRequired
-   Server = https://github.com/chemaw8/chemarchy-repo/releases/download/<canal>/x86_64
+   Server = https://github.com/chemaw8/chemarchy-repo/releases/download/<canal>
    ```
    > En el primer install hazlo a mano: `chemarchy-channel-set` aún no existe (viene con el meta).
    > Una vez instalado, para cambiar de canal: `chemarchy-channel-set <stable|rc|edge>`.
@@ -36,7 +53,7 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
    ```
 
 **Cierra sesión y vuelve a entrar** (o reinicia) para que apliquen tema/KWin/atajos KDE. Luego:
-`Super+/` abre el cheatsheet · `theme pick` cambia de tema · `chemarchy-update` actualiza.
+`Super+/` abre el cheatsheet · `chtheme pick` cambia de tema · `chemarchy-update` actualiza.
 
 ### ¿Quién eres?
 
@@ -46,6 +63,8 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
 
 > Arquitectura `x86_64`. El canal (`stable`, `rc`, o `edge`) es el tag del release en GitHub.
 > La db y cada paquete se verifican con `SigLevel=Required` contra la llave de arriba.
+
+</details>
 
 ## Personalización
 
