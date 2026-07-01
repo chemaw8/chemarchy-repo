@@ -3,7 +3,7 @@
 Canal **pacman firmado** de [chemarchy](https://github.com/chemaw8/chemarchy) — el repo `[chemarchy]`.
 Aquí viven solo los **paquetes y la base de datos firmados** (assets de Release); el fuente es privado.
 
-Arquitectura `x86_64` · paquetes `any`. Firmados con la llave dedicada del repo:
+Firmados con la llave dedicada del repo:
 
 ```
 KEYID  069CA59152A9E92A
@@ -11,65 +11,58 @@ FPR    9019 9772 56F9 F5CD D490  7C02 069C A591 52A9 E92A
 UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
 ```
 
-## Instalar (1 comando)
 
-Sobre un **CachyOS/Arch + KDE** existente:
+Una curaduría opinada de KDE Plasma + Catppuccin sobre CachyOS/Arch: barra Quickshell, temas que se
+siguen entre apps, tiling, dock, atajos y un wizard de primer arranque. **Instalar es de 0–1 comandos.**
+
+## Camino 1 — Ya tienes CachyOS/Arch + KDE (1 comando)
+
 ```bash
-curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh | bash
+curl -fsSL https://chemarchy.sh | bash
 ```
-Inspeccionable / con flags:
+
+Eso sincroniza el reloj, instala la llave, añade el repo firmado `[chemarchy]`, instala el meta-paquete
+y despliega la config a tu `$HOME`. Al **siguiente login** corre un asistente que termina de personalizar.
+
+¿Prefieres inspeccionar antes de correr? (recomendado para cualquier `curl|bash`):
+
 ```bash
-curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh -o install.sh; less install.sh; bash install.sh
-curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh | bash -s -- --channel rc --no-extras
-CHEMARCHY_CHANNEL=edge curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh | bash
+curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh -o install.sh
+less install.sh        # léelo
+bash install.sh        # córrelo
 ```
-El asistente de personalización corre en tu **siguiente inicio de sesión**.
-(Alterna raw: `https://raw.githubusercontent.com/chemaw8/chemarchy-repo/main/install.sh`.)
 
-<details><summary><b>Instalación manual</b> (avanzada, paso a paso)</summary>
+Con opciones: `curl -fsSL https://chemarchy.sh | bash -s -- --channel rc --no-extras`
+· o por variable: `CHEMARCHY_CHANNEL=edge curl -fsSL https://chemarchy.sh | bash`.
 
-## Añadir el repo
+## Camino 2 — Computadora nueva / vacía (bare-metal, 0 comandos en terminal)
 
-1. **Confía en la llave + instala el keyring** (ancla de confianza):
-   ```bash
-   curl -LO https://github.com/chemaw8/chemarchy-repo/releases/download/edge/chemarchy-keyring-20260626-1-any.pkg.tar.zst
-   sudo pacman -U chemarchy-keyring-20260626-1-any.pkg.tar.zst   # importa la pubkey + pacman-key --populate chemarchy
-   ```
+1. **Descarga el ISO** (último release de chemarchy).
+2. **Flashéalo a una USB** (≥8 GB; borra la USB):
+   - **Linux:** Impression o Ventoy (copias el .iso a la USB), o `dd`:
+     `sudo dd if=chemarchy-*.iso of=/dev/sdX bs=4M status=progress oflag=sync` (sustituye `/dev/sdX` por tu USB; verifica con `lsblk`).
+   - **Windows:** Rufus (modo DD) o balenaEtcher.
+   - **macOS:** balenaEtcher.
+3. **Arranca desde la USB.** Al encender, abre el **menú de arranque** con la tecla de tu placa
+   (suele ser **F12**, a veces **F11/F8/F9/ESC**; en algunas hay que entrar a la **BIOS/UEFI** con **Del/F2**
+   y poner la USB primero) → elige la entrada **CHEMARCHY**.
+4. **Instala con Calamares** (se abre solo en la sesión live): idioma → zona → teclado → particiones →
+   **crea tu usuario** (el único texto que escribes) → **Instalar**. Es **offline**: copia el sistema tal
+   cual, sin descargar nada.
+5. **Reinicia y quita la USB.** En el **primer login**, un asistente (tema/WiFi/GPU/apps) te recibe.
 
-2. **Añade el repo a `/etc/pacman.conf`** (después de core/extra/multilib) reemplazando `<canal>` por `stable`, `rc`, o `edge`:
-   ```ini
-   [chemarchy]
-   SigLevel = Required DatabaseRequired
-   Server = https://github.com/chemaw8/chemarchy-repo/releases/download/<canal>
-   ```
-   > En el primer install hazlo a mano: `chemarchy-channel-set` aún no existe (viene con el meta).
-   > Una vez instalado, para cambiar de canal: `chemarchy-channel-set <stable|rc|edge>`.
+## Después de instalar (cualquiera)
 
-3. **Sincroniza e instala**: `sudo pacman -Syyuu && sudo pacman -S chemarchy`
+- `chtheme pick` — cambia de tema · `chemarchy apps` — bundles de apps · `chemarchy update` — actualiza
+- `chemarchy-channel-set stable|rc|edge` — cambia de canal · `chemarchy doctor` — diagnostica/repara
+- `Super+/` — cheatsheet completo · `chemarchy help` — todos los comandos
+- Re-correr el asistente: `chemarchy-wizard --force`
 
-4. **Instala el resto (AUR + servicios)** — el glass blur, los temas Catppuccin y spicetify son AUR:
-   ```bash
-   chemarchy-bootstrap all
-   ```
+Si algo se atora en cualquier punto, el mensaje te dice el comando exacto a correr (`chemarchy doctor`,
+o reintentar `curl … | bash`). El objetivo: instalarlo **sin ayuda humana**.
 
-**Cierra sesión y vuelve a entrar** (o reinicia) para que apliquen tema/KWin/atajos KDE. Luego:
-`Super+/` abre el cheatsheet · `chtheme pick` cambia de tema · `chemarchy-update` actualiza.
+---
 
-### ¿Quién eres?
-
-- **Otra persona** (sin invitación) → es justo lo de arriba (pasos 1-4). El distro completo, público.
-- **Colaborador invitado** → además: `gh auth login` · `chemarchy-channel-set --personal on <owner/repo>` · `chemarchy-update` (baja la capa personal del repo privado al que te invitaron).
-- **El dueño** → setup completo con `chemarchy replicate` (overlay + secretos restic + vault).
-
-> Arquitectura `x86_64`. El canal (`stable`, `rc`, o `edge`) es el tag del release en GitHub.
-> La db y cada paquete se verifican con `SigLevel=Required` contra la llave de arriba.
-
-</details>
-
-## Personalización
-
-Los ganchos personales (vault, dashboard, backups) NO van hardcodeados:
-```bash
-cp /usr/share/chemarchy/user.conf.example ~/.config/chemarchy/user.conf && $EDITOR ~/.config/chemarchy/user.conf
-```
-Vacío = comportamiento genérico (las features personales no corren).
+> Repo de distribución; canales `stable`/`rc`/`edge` = tags de Release. Cada paquete y la db se
+> verifican con `SigLevel=Required` contra la llave de arriba. Personalización sin forkear:
+> `cp /usr/share/chemarchy/user.conf.example ~/.config/chemarchy/user.conf`.
