@@ -129,6 +129,21 @@ SigLevel = Required DatabaseRequired
 Server = $REPO_BASE/$CHANNEL
 EOF
   sudo_a install -Dm644 /dev/stdin "$active" <<<"$CHANNEL"
+  # dedupe: installs viejos dejaron [chemarchy] inline → doble registro con el Include
+  # (espejo del awk de migrations/1782960001_dedupe-chemarchy-repo.sh, con las mismas
+  # líneas de rescate: el Include gestionado suele venir pegado después del bloque inline)
+  if [ -f "$pacconf" ] && grep -q '^\[chemarchy\]' "$pacconf"; then
+    local _t; _t="$(mktemp)"
+    awk '
+      /^\[/                     { skip = ($0 == "[chemarchy]") }
+      /^# repo \[chemarchy\]/   { skip = 0 }
+      /chemarchy-channel\.conf/ { skip = 0 }
+      !skip
+    ' "$pacconf" > "$_t"
+    sudo_a cp "$_t" "$pacconf" || { rm -f "$_t"; die 1 "No pude limpiar el bloque [chemarchy] inline de pacman.conf."; }
+    rm -f "$_t"
+    info "bloque [chemarchy] inline previo removido (queda el Include)"
+  fi
   local incl="Include = /etc/pacman.d/chemarchy-channel.conf"
   if [ -f "$pacconf" ] && grep -qxF "$incl" "$pacconf" 2>/dev/null; then
     info "Include ya presente en pacman.conf"
