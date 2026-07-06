@@ -189,9 +189,16 @@ run_calamares() {
     chemarchy-identity install >/dev/null 2>&1 && ok "identidad chemarchy" \
       || info "identidad: se reintenta tras el primer login"
   fi
-  # 2) poblar la confianza del keyring en el sistema instalado (ya horneado por unpackfs)
-  if [ -f /usr/share/pacman/keyrings/chemarchy.gpg ] && command -v pacman-key >/dev/null 2>&1; then
-    pacman-key --populate chemarchy >/dev/null 2>&1 && ok "keyring poblado"
+  # 2) INICIALIZAR + poblar el keyring de pacman en el target (r9, E2E 06-jul). El airootfs NO trae
+  #    /etc/pacman.d/gnupg (en el live es un tmpfs → unpackfs no lo copia), así que el target arrancaba
+  #    SIN keyring → `pacman -Syu` fallaba ("clave cachyos 882DCFE… desconocida / ¿pacman-key --init?").
+  #    Los .gpg fuente (archlinux/cachyos/chemarchy) SÍ están en /usr/share/pacman/keyrings/ vía unpackfs,
+  #    así que --populate es OFFLINE (cero descargas). --init genera el master key + trustdb del target.
+  if command -v pacman-key >/dev/null 2>&1; then
+    pacman-key --init >/dev/null 2>&1 && ok "keyring inicializado" \
+      || info "keyring: --init falló (se reintenta tras el primer login vía chemarchy-update)"
+    pacman-key --populate archlinux cachyos chemarchy >/dev/null 2>&1 \
+      && ok "keyring poblado (archlinux + cachyos + chemarchy)" || info "keyring: --populate parcial"
   fi
   # 3) servicios de SISTEMA (no de usuario): se habilitan en el target, arrancan al primer boot
   local s
