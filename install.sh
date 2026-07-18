@@ -14,6 +14,7 @@ REPO_BASE="${CHEMARCHY_REPO_BASE:-https://github.com/chemaw8/chemarchy-repo/rele
 CHEMARCHY_INSTALL_PREFIX="${CHEMARCHY_INSTALL_PREFIX:-/}"   # raíz de /etc (override en tests)
 ASKPASS="${SUDO_ASKPASS:-/usr/bin/ksshaskpass}"
 KEYID=069CA59152A9E92A   # llave de firma del repo [chemarchy] (referencia; el keyring la importa)
+KEYFPR=9019977256F9F5CDD4907C02069CA59152A9E92A   # fingerprint COMPLETO esperado del keyring (ancla de confianza)
 LOGFILE="/dev/null"      # hasta log_init: evita error de redirección si log() corre antes (p.ej. die en parse_args)
 
 # ── helpers ───────────────────────────────────────────────────────────────
@@ -113,6 +114,14 @@ step_keyring() {
   local url="$REPO_BASE/$CHANNEL/chemarchy-keyring.pkg.tar.zst"
   local tmp; tmp="$(mktemp -d)"
   curl -fsSL "$url" -o "$tmp/chemarchy-keyring.pkg.tar.zst" || { rm -rf "$tmp"; die 1 "No pude descargar el keyring ($url)."; }
+  # ancla de confianza: este pacman -U corre SIN firma que lo avale (es el bootstrap del trust),
+  # así que el contenido se verifica contra el fingerprint fijo en el script — HTTPS solo
+  # autentica a GitHub, no que el asset del release sea el keyring legítimo.
+  local got; mkdir -p -m700 "$tmp/g"
+  got="$(bsdtar -xOf "$tmp/chemarchy-keyring.pkg.tar.zst" usr/share/pacman/keyrings/chemarchy.gpg 2>/dev/null \
+        | gpg --homedir "$tmp/g" --batch --quiet --show-keys --with-colons 2>/dev/null \
+        | awk -F: '/^fpr:/{print $10; exit}')"
+  [ "$got" = "$KEYFPR" ] || { rm -rf "$tmp"; die 1 "Fingerprint del keyring descargado (${got:-ilegible}) ≠ esperado ($KEYFPR) — NO lo instalo."; }
   sudo_a pacman -U --noconfirm "$tmp/chemarchy-keyring.pkg.tar.zst" || { rm -rf "$tmp"; die 1 "pacman -U del keyring falló (¿reloj atrasado?)."; }
   rm -rf "$tmp"; ok "keyring instalado"
 }
