@@ -12,28 +12,33 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
 ```
 
 
+![chemarchy](https://github.com/chemaw8/chemarchy-repo/raw/main/assets/chemarchy-neon-lofi.png)
+
 Una curaduría opinada de KDE Plasma + Catppuccin sobre CachyOS/Arch: barra Quickshell, temas que se
-siguen entre apps, tiling, dock, atajos y un wizard de primer arranque. **Instalar es de 0–1 comandos.**
+siguen entre apps (la misma escena de arriba existe en
+[cuatro temas](https://github.com/chemaw8/chemarchy-repo/raw/main/assets/chemarchy-gotham.png)),
+tiling, dock, atajos y un wizard de primer arranque. **Instalar es de 0–1 comandos.**
 
 ## Camino 1 — Ya tienes CachyOS/Arch + KDE (1 comando)
 
 ```bash
-curl -fsSL https://chemarchy.sh | bash
+curl -fsSL https://github.com/chemaw8/chemarchy-repo/raw/main/install.sh | bash
 ```
 
-Eso sincroniza el reloj, instala la llave, añade el repo firmado `[chemarchy]`, instala el meta-paquete
-y despliega la config a tu `$HOME`. Al **siguiente login** corre un asistente que termina de personalizar.
+Eso sincroniza el reloj, instala la llave (verificando su fingerprint), añade el repo firmado
+`[chemarchy]`, instala el meta-paquete y despliega la config a tu `$HOME`. Al **siguiente login**
+corre un asistente que termina de personalizar.
 
 ¿Prefieres inspeccionar antes de correr? (recomendado para cualquier `curl|bash`):
 
 ```bash
-curl -fsSL https://chemaw8.github.io/chemarchy-repo/install.sh -o install.sh
+curl -fsSL https://github.com/chemaw8/chemarchy-repo/raw/main/install.sh -o install.sh
 less install.sh        # léelo
 bash install.sh        # córrelo
 ```
 
-Con opciones: `curl -fsSL https://chemarchy.sh | bash -s -- --channel rc --no-extras`
-· o por variable: `CHEMARCHY_CHANNEL=edge curl -fsSL https://chemarchy.sh | bash`.
+Con opciones: `… | bash -s -- --channel rc --no-extras`
+· o por variable: `CHEMARCHY_CHANNEL=edge curl -fsSL … | bash`.
 
 ## Camino 2 — Computadora nueva / vacía (bare-metal, 0 comandos en terminal)
 
