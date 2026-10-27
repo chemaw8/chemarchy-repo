@@ -214,7 +214,41 @@ run_calamares() {
   for s in NetworkManager bluetooth sddm plasma-login-manager; do
     systemctl enable "$s" >/dev/null 2>&1 && ok "enable $s" || true
   done
+  calamares_canal
+  calamares_sin_live
   ok "--from-calamares completo (cero descargas)"
+}
+# 4) Canal de actualización horneado en el ISO (iso/build.sh → /usr/share/chemarchy/iso-channel). Sin esto el
+#    target no tiene [chemarchy] en pacman.conf y jamás recibe updates (hierro nuevo, 2026-10-27). Offline: el
+#    conf viene en el paquete. CHEMARCHY_INSTALL_ROOT es gancho de prueba (prefijo del target).
+calamares_canal() {
+  local R="${CHEMARCHY_INSTALL_ROOT:-}" ch src
+  ch="$(cat "$R/usr/share/chemarchy/iso-channel" 2>/dev/null || echo stable)"
+  case "$ch" in stable|rc|edge) ;; *) ch=stable ;; esac
+  src="$R/usr/share/chemarchy/pacman/chemarchy-$ch.conf"
+  [ -f "$src" ] || { info "canal: falta $src (se configura con chemarchy-channel-set tras el primer login)"; return 0; }
+  install -Dm644 "$src" "$R/etc/pacman.d/chemarchy-channel.conf"
+  printf '%s\n' "$ch" > "$R/etc/chemarchy-channel"
+  local incl="Include = /etc/pacman.d/chemarchy-channel.conf"
+  grep -qxF "$incl" "$R/etc/pacman.conf" 2>/dev/null \
+    || printf '\n# repo [chemarchy] (gestionado por chemarchy-channel-set)\n%s\n' "$incl" >> "$R/etc/pacman.conf"
+  ok "canal $ch configurado"
+}
+# 5) Lo del live que no debe quedar en el instalado (hierro nuevo, 2026-10-27):
+#    - sshd del live con root+contraseña (10-archiso.conf) y habilitado;
+#    - servicios del live/VM, y zfs sin raíz zfs: livecd-alsa-unmuter y zfs-import-cache piden
+#      systemd-udev-settle (25 s con NVIDIA) y empujaban drm-module-load.target del awaiter de CachyOS más allá
+#      de sus 30 s → pantalla azul «Failed to load your GPU driver(s)»;
+#    - systemd-time-wait-sync: falla a los 30 s en cada arranque y nada lo necesita en escritorio.
+calamares_sin_live() {
+  local R="${CHEMARCHY_INSTALL_ROOT:-}" u quitar=() raiz
+  rm -f "$R/etc/ssh/sshd_config.d/10-archiso.conf" && ok "sin 10-archiso.conf (root/contraseña por SSH)"
+  quitar=(sshd livecd-talk livecd-alsa-unmuter hv_fcopy_daemon hv_kvp_daemon hv_vss_daemon vmware-vmblock-fuse
+          vboxservice vmtoolsd systemd-time-wait-sync)
+  raiz="$(findmnt -no FSTYPE / 2>/dev/null)"
+  [ "$raiz" = zfs ] || quitar+=(zfs-import-cache zfs-import-scan zfs-mount zfs-import.target zfs.target zfs-zed)
+  for u in "${quitar[@]}"; do systemctl disable "$u" >/dev/null 2>&1 || true; done
+  ok "servicios del live/VM deshabilitados (${#quitar[@]})"
 }
 handoff() {
   ok "Listo. Cierra sesión y vuelve a entrar — un asistente (chemarchy-wizard) te ayudará a terminar."
