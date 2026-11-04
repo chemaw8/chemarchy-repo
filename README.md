@@ -14,12 +14,12 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
 
 ![chemarchy](https://github.com/chemaw8/chemarchy-repo/raw/main/assets/chemarchy-neon-lofi.png)
 
-Una curaduría opinada de KDE Plasma + Catppuccin sobre CachyOS/Arch: barra Quickshell, temas que se
+Una curaduría opinada de KDE Plasma 6 (Wayland) sobre CachyOS/Arch: shell propio en Quickshell, temas que se
 siguen entre apps (la misma escena de arriba existe en
 [cuatro temas](https://github.com/chemaw8/chemarchy-repo/raw/main/assets/chemarchy-gotham.png)),
-tiling, dock, atajos y un wizard de primer arranque. **Instalar es de 0–1 comandos.**
+tiling, dock, atajos y un asistente de primer arranque. **Instalar es un comando.**
 
-## Camino 1 — Ya tienes CachyOS/Arch + KDE (1 comando)
+## Instalar — ya tienes CachyOS/Arch + KDE Plasma (1 comando)
 
 ```bash
 curl -fsSL https://github.com/chemaw8/chemarchy-repo/raw/main/install.sh | bash
@@ -38,25 +38,18 @@ bash install.sh        # córrelo
 ```
 
 Con opciones: `… | bash -s -- --channel rc --no-extras`
-· o por variable: `CHEMARCHY_CHANNEL=edge curl -fsSL … | bash`.
+· o el canal edge: `curl -fsSL … | bash -s -- --channel edge`.
 
-## Camino 2 — Computadora nueva / vacía (bare-metal, 0 comandos en terminal)
+## Computadora nueva o vacía (ISO)
 
-1. **Descarga el ISO** (último release de chemarchy).
-2. **Flashéalo a una USB** (≥8 GB; borra la USB):
-   - **Linux:** Impression o Ventoy (copias el .iso a la USB), o `dd`:
-     `sudo dd if=chemarchy-*.iso of=/dev/sdX bs=4M status=progress oflag=sync` (sustituye `/dev/sdX` por tu USB; verifica con `lsblk`).
-   - **Windows:** Rufus (modo DD) o balenaEtcher.
-   - **macOS:** balenaEtcher.
-3. **Arranca desde la USB.** Al encender, abre el **menú de arranque** con la tecla de tu placa
-   (suele ser **F12**, a veces **F11/F8/F9/ESC**; en algunas hay que entrar a la **BIOS/UEFI** con **Del/F2**
-   y poner la USB primero) → elige la entrada **CHEMARCHY**.
-4. **Instala con Calamares** (se abre solo en la sesión live): idioma → zona → teclado → particiones →
-   **crea tu usuario** (el único texto que escribes) → **Instalar**. Es **offline**: copia el sistema tal
-   cual, sin descargar nada.
-5. **Reinicia y quita la USB.** En el **primer login**, un asistente (tema/WiFi/GPU/apps) te recibe.
+Todavía **no hay una ISO publicada** con su checksum, así que por ahora el único camino es el de arriba: instala
+CachyOS con KDE Plasma (su instalador oficial) y corre el comando de instalación. Cuando haya una ISO publicada, aquí
+irán el enlace de descarga, su `.sha256` y los pasos para grabarla en una USB.
 
-## Después de instalar (cualquiera)
+Si ya arrancaste una ISO de chemarchy (sesión live), el instalador es el icono **Instalar chemarchy** del escritorio;
+la guía `~/Documentos/CHEMARCHY-empieza-aqui.md` explica qué esperar después.
+
+## Después de instalar
 
 - `chtheme pick` — cambia de tema · `chemarchy apps` — bundles de apps · `chemarchy update` — actualiza
 - `chemarchy-channel-set stable|rc|edge` — cambia de canal · `chemarchy doctor` — diagnostica/repara
@@ -66,11 +59,11 @@ Con opciones: `… | bash -s -- --channel rc --no-extras`
 Si algo se atora en cualquier punto, el mensaje te dice el comando exacto a correr (`chemarchy doctor`,
 o reintentar `curl … | bash`). El objetivo: instalarlo **sin ayuda humana**.
 
-## sudo sin contraseña (instalaciones desde el ISO)
+## sudo sin contraseña (instalaciones desde una ISO)
 
-Al instalar desde el ISO, el grupo `wheel` (tu usuario) queda con `sudo` **sin contraseña**, igual que
+Al instalar desde una ISO de chemarchy, el grupo `wheel` (tu usuario) queda con `sudo` **sin contraseña**, igual que
 en la sesión live (`/etc/sudoers.d/g_wheel`). Es una decisión del proyecto: cómodo, pero cualquier
-programa que corra con tu usuario puede ser root. El camino 1 no toca tu sudo.
+programa que corra con tu usuario puede ser root. El comando de instalación (`install.sh`) no toca tu sudo.
 
 Para quitarlo y que `sudo` vuelva a pedir contraseña:
 
