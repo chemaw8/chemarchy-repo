@@ -66,6 +66,31 @@ Con opciones: `… | bash -s -- --channel rc --no-extras`
 Si algo se atora en cualquier punto, el mensaje te dice el comando exacto a correr (`chemarchy doctor`,
 o reintentar `curl … | bash`). El objetivo: instalarlo **sin ayuda humana**.
 
+## sudo sin contraseña (instalaciones desde el ISO)
+
+Al instalar desde el ISO, el grupo `wheel` (tu usuario) queda con `sudo` **sin contraseña**, igual que
+en la sesión live (`/etc/sudoers.d/g_wheel`). Es una decisión del proyecto: cómodo, pero cualquier
+programa que corra con tu usuario puede ser root. El camino 1 no toca tu sudo.
+
+Para quitarlo y que `sudo` vuelva a pedir contraseña:
+
+```bash
+sudo passwd "$USER"                       # 1. si aún no tienes contraseña (o no la recuerdas): fíjala
+sudo visudo -f /etc/sudoers.d/g_wheel     # 2. deja la línea así:  %wheel ALL=(ALL:ALL) ALL
+sudo visudo -c                            # 3. valida toda la configuración de sudo
+sudo -k; sudo true                        # 4. debe pedirte la contraseña del paso 1
+```
+
+No borres `g_wheel`: suele ser la única regla de `wheel` y sin ella te quedas sin sudo. Si el paso 3
+marca un error, repite el paso 2 antes de cerrar la terminal.
+
+## IA
+
+El sidebar de IA (`Meta+Shift+I`) y `chemarchy ai` usan Claude con **tu cuenta de Claude Code** (hace falta
+`claude` con sesión iniciada; no se configura API key). **No es local:** lo que le mandas, incluidas
+capturas y texto de OCR, viaja a Anthropic. `chemarchy diagnose` oculta datos sensibles antes de enviar
+(`chemarchy-diagnose --evidence` muestra qué saldría).
+
 ---
 
 > Repo de distribución; canales `stable`/`rc`/`edge` = tags de Release. Cada paquete y la db se
