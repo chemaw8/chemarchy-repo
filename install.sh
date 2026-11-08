@@ -216,6 +216,12 @@ run_calamares() {
   done
   calamares_canal
   calamares_sin_live
+  # 5) Limine: la ISO excluye el desvío de limine-mkinitcpio-hook (rompía su build) → repónerlo del paquete en caché.
+  #    Si no está en caché, lo repone el primer chemarchy update justo después del -Syu (regenera Limine).
+  if command -v chemarchy-limine-hook >/dev/null 2>&1; then
+    chemarchy-limine-hook reparar --sin-red >/dev/null 2>&1 && ok "Limine: kernels nuevos llegarán al menú" \
+      || info "Limine: el desvío de kernels se repone en el primer chemarchy update"
+  fi
   ok "--from-calamares completo (cero descargas)"
 }
 # 4) Canal de actualización horneado en el ISO (iso/build.sh → /usr/share/chemarchy/iso-channel). Sin esto el
