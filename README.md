@@ -15,8 +15,7 @@ UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
 ![chemarchy](https://github.com/chemaw8/chemarchy-repo/raw/main/assets/chemarchy-neon-lofi.png)
 
 Una curaduría opinada de KDE Plasma 6 (Wayland) sobre CachyOS/Arch: shell propio en Quickshell, temas que se
-siguen entre apps (la misma escena de arriba existe en
-[cuatro temas](https://github.com/chemaw8/chemarchy-repo/raw/main/assets/chemarchy-gotham.png)),
+siguen entre apps (siete temas; el de fábrica es **Eclipse**, la cara de chemarchy: negro rojizo, corona carmesí),
 tiling, dock, atajos y un asistente de primer arranque. **Instalar es un comando.**
 
 ## Instalar — ya tienes CachyOS/Arch + KDE Plasma (1 comando)
