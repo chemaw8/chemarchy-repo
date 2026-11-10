@@ -1,22 +1,27 @@
-# chemarchy-repo
-
-Canal **pacman firmado** de [chemarchy](https://github.com/chemaw8/chemarchy) — el repo `[chemarchy]`.
-Aquí viven solo los **paquetes y la base de datos firmados** (assets de Release); el fuente es privado.
-
-Firmados con la llave dedicada del repo:
-
-```
-KEYID  069CA59152A9E92A
-FPR    9019 9772 56F9 F5CD D490  7C02 069C A591 52A9 E92A
-UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
-```
+# chemarchy
 
 
-![chemarchy](https://github.com/chemaw8/chemarchy-repo/raw/main/assets/chemarchy-neon-lofi.png)
+<p align="center">
+  <img src="https://github.com/chemaw8/chemarchy-repo/raw/main/assets/social-preview.png" width="760" alt="chemarchy · Eclipse: Kuro, el gato de chemarchy, dormido sobre un eclipse carmesí">
+</p>
 
 Una curaduría opinada de KDE Plasma 6 (Wayland) sobre CachyOS/Arch: shell propio en Quickshell, temas que se
 siguen entre apps (siete temas; el de fábrica es **Eclipse**, la cara de chemarchy: negro rojizo, corona carmesí),
 tiling, dock, atajos y un asistente de primer arranque. **Instalar es un comando.**
+
+**Lo nuevo:**
+- **Marca propia:** el logo es una «C» que es un gato enroscado, y **Kuro**, la mascota, vive sobre tus ventanas,
+  reacciona al teclado, se duerme y toma el color de tu tema.
+- **Siete temas con fondo propio:** cada uno trae su escena de Kuro y el eclipse, en sus colores. En la terminal,
+  fastfetch muestra un emblema animado de Kuro dormido sobre el eclipse.
+- **Updates que se cuidan solos:** si CachyOS publica un kernel antes que su driver de NVIDIA, chemarchy lo retiene y
+  actualiza todo lo demás. Con Btrfs y Snapper (como los deja el instalador de chemarchy), cada cambio de paquetes
+  toma un snapshot antes y puedes volver a él desde el menú de arranque de Limine.
+- **`chemarchy fleet`:** el estado de todas tus máquinas (kernel, reinicio pendiente, respaldos) en una tabla.
+
+<p align="center">
+  <img src="https://github.com/chemaw8/chemarchy-repo/raw/main/assets/chemarchy-fondos.jpg" width="900" alt="Los siete fondos de chemarchy: Kuro y el eclipse en eclipse, ronin, noir, gotham, oxocarbon, neon-lofi y flexoki">
+</p>
 
 ## Instalar — ya tienes CachyOS/Arch + KDE Plasma (1 comando)
 
@@ -82,6 +87,23 @@ El sidebar de IA (`Meta+Shift+I`) y `chemarchy ai` usan Claude con **tu cuenta d
 `claude` con sesión iniciada; no se configura API key). **No es local:** lo que le mandas, incluidas
 capturas y texto de OCR, viaja a Anthropic. `chemarchy diagnose` oculta datos sensibles antes de enviar
 (`chemarchy-diagnose --evidence` muestra qué saldría).
+
+## Marca
+
+El logo, el emblema de la terminal, Kuro y los fondos que lo muestran son © chema, todos los derechos reservados:
+se redistribuyen sin modificar como parte de chemarchy, pero no pueden usarse para identificar otro proyecto. El resto
+de chemarchy es MIT.
+
+## La llave del repo
+
+Este es el canal **pacman firmado** de chemarchy — el repo `[chemarchy]`. Aquí viven solo los **paquetes y la base de
+datos firmados** (assets de Release); el código fuente es privado. Firmados con la llave dedicada del repo:
+
+```
+KEYID  069CA59152A9E92A
+FPR    9019 9772 56F9 F5CD D490  7C02 069C A591 52A9 E92A
+UID    Chemarchy Repository Signing Key <chemarchy@chemaw8.github.io>
+```
 
 ---
 
