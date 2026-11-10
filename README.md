@@ -1,5 +1,7 @@
 # chemarchy
 
+**Español** · [English](README.en.md)
+
 
 <p align="center">
   <img src="https://github.com/chemaw8/chemarchy-repo/raw/main/assets/social-preview.png" width="760" alt="chemarchy · Eclipse: Kuro, el gato de chemarchy, dormido sobre un eclipse carmesí">
