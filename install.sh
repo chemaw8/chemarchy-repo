@@ -195,7 +195,7 @@ run_calamares() {
   printf '\n\033[1;35m» chemarchy: personalizando el sistema (offline)\033[0m\n'
   # 1) identidad de distro (os-release/lsb): que diga Chemarchy, no CachyOS. Idempotente.
   if command -v chemarchy-identity >/dev/null 2>&1; then
-    chemarchy-identity install >/dev/null 2>&1 && ok "identidad chemarchy" \
+    chemarchy-identity install >>"$LOGFILE" 2>&1 && ok "identidad chemarchy" \
       || info "identidad: se reintenta tras el primer login"
   fi
   # 2) INICIALIZAR + poblar el keyring de pacman en el target (r9, E2E 06-jul). El airootfs NO trae
@@ -222,6 +222,7 @@ run_calamares() {
     chemarchy-limine-hook reparar --sin-red >/dev/null 2>&1 && ok "Limine: kernels nuevos llegarán al menú" \
       || info "Limine: el desvío de kernels se repone en el primer chemarchy update"
   fi
+  calamares_marca_arranque
   ok "--from-calamares completo (cero descargas)"
 }
 # 4) Canal de actualización horneado en el ISO (iso/build.sh → /usr/share/chemarchy/iso-channel). Sin esto el
@@ -255,6 +256,80 @@ calamares_sin_live() {
   [ "$raiz" = zfs ] || quitar+=(zfs-import-cache zfs-import-scan zfs-mount zfs-import.target zfs.target zfs-zed)
   for u in "${quitar[@]}"; do systemctl disable "$u" >/dev/null 2>&1 || true; done
   ok "servicios del live/VM deshabilitados (${#quitar[@]})"
+}
+# 6) Marca de ARRANQUE y LOGIN en el destino (spec 019 V1; ISO E2E 2026-11-15/16: la frase LUKS salió con el logo de
+#    Arch y Plasma Login con el fondo genérico de KDE). Causas: (a) nada activaba Plymouth de forma verificable aquí:
+#    chemarchy-identity lo intenta con sudo + `plymouth-set-default-theme -R` y, si el rebuild falla, REGRESA la
+#    selección al tema anterior; su salida iba a /dev/null → el destino quedaba con el default (bgrt/spinner = logo de
+#    Arch). (b) El fondo de Plasma Login solo lo pone `chemarchy-bootstrap restore` (usuario + sudo gráfico tras el
+#    primer login), nunca el instalador. Aquí, como root en el chroot y sin sudo: tema en plymouthd.conf, gancho
+#    plymouth en el initramfs, initramfs regenerado (limine-update → también las imágenes de /boot/<machine-id>/) y
+#    fondo de login instalado. Respeta las guardas de marca (spec 017 B). CHEMARCHY_INSTALL_ROOT = prefijo de pruebas.
+calamares_marca_arranque() {
+  local R="${CHEMARCHY_INSTALL_ROOT:-}" ply=chemarchy-eclipse M actual conf cambio=0
+  M="$(command -v chemarchy-marca 2>/dev/null || true)"
+  export CHEMARCHY_MARCA_DIR="${CHEMARCHY_MARCA_DIR:-$R/var/lib/chemarchy/marca}"
+  marca_ok() { if [ -n "$M" ]; then "$M" "$@"; else return 1; fi; }   # sin ayudante no se escribe
+  # ── Plymouth ──
+  conf="$R/etc/plymouth/plymouthd.conf"
+  if [ -d "$R/usr/share/plymouth/themes/$ply" ]; then
+    actual="$(sed -n 's/^[[:space:]]*Theme[[:space:]]*=[[:space:]]*//p' "$conf" 2>/dev/null | tail -1)"
+    [ -n "$actual" ] || actual="$(sed -n 's/^[[:space:]]*Theme[[:space:]]*=[[:space:]]*//p' "$R/usr/share/plymouth/plymouthd.defaults" 2>/dev/null | tail -1)"
+    if [ "$actual" = "$ply" ] && grep -qE "^[[:space:]]*Theme[[:space:]]*=[[:space:]]*$ply[[:space:]]*\$" "$conf" 2>/dev/null; then
+      info "Plymouth: $ply ya estaba elegido"
+    elif marca_ok plymouth "$actual"; then
+      mkdir -p "${conf%/*}"
+      if grep -qE '^[[:space:]]*Theme[[:space:]]*=' "$conf" 2>/dev/null; then
+        sed -i -E "s|^[[:space:]]*Theme[[:space:]]*=.*|Theme=$ply|" "$conf"
+      elif grep -qx '\[Daemon\]' "$conf" 2>/dev/null; then
+        sed -i "/^\[Daemon\]\$/a Theme=$ply" "$conf"
+      else
+        printf '[Daemon]\nTheme=%s\n' "$ply" >> "$conf"
+      fi
+      marca_ok registrar plymouth "$ply" || true
+      ok "Plymouth: tema $ply (antes: ${actual:-ninguno})"
+    else info "Plymouth: «$actual» no es un default, no lo cambio"; fi
+    # el gancho plymouth (antes del cifrado: si no, la frase LUKS se pide en texto)
+    install -Dm644 /dev/stdin "$R/etc/mkinitcpio.conf.d/20-chemarchy-plymouth.conf" <<'EOF'
+# chemarchy (calamares_marca_arranque): Plymouth en el initramfs, antes de sd-encrypt/encrypt, para que el splash
+# y la petición de la frase LUKS salgan con el tema. No-op si el HOOKS ya lo trae.
+if [[ " ${HOOKS[*]} " != *" plymouth "* ]]; then
+  _h=()
+  for _x in "${HOOKS[@]}"; do _h+=("$_x"); [[ $_x = systemd || $_x = udev ]] && _h+=(plymouth); done
+  [[ " ${_h[*]} " == *" plymouth "* ]] || _h+=(plymouth)
+  HOOKS=("${_h[@]}"); unset _h _x
+fi
+EOF
+    rm -f "$R/var/lib/chemarchy/marca/plymouth-pendiente"
+    cambio=1
+  else info "Plymouth: el tema $ply no está en el destino (¿falta chemarchy-themes?)"; fi
+  # regenerar el initramfs DEL DESTINO (corre dentro del chroot de Calamares); limine-update además rehace las
+  # imágenes que arranca Limine en /boot/<machine-id>/ (mkinitcpio -P solo cubre /boot/initramfs-*).
+  if [ "$cambio" = 1 ]; then
+    if command -v limine-update >/dev/null 2>&1 && limine-update >>"$LOGFILE" 2>&1; then ok "initramfs regenerado (limine-update)"
+    elif command -v mkinitcpio >/dev/null 2>&1 && mkinitcpio -P >>"$LOGFILE" 2>&1; then ok "initramfs regenerado (mkinitcpio -P)"
+    else warn "no pude regenerar el initramfs: el splash sale en el siguiente update del kernel"
+      mkdir -p "$R/var/lib/chemarchy/marca" && : > "$R/var/lib/chemarchy/marca/plymouth-pendiente"; fi
+  fi
+  # ── Plasma Login: fondo Eclipse ──
+  local src="$R/usr/share/chemarchy/system/plasmalogin/wallpapers/chemarchy-eclipse.jpg"
+  local dst=/var/lib/plasmalogin/wallpapers/chemarchy-eclipse.jpg pl="$R/etc/plasmalogin.conf"
+  local grupo='[Greeter][Wallpaper][org.kde.image][General]'
+  if [ ! -f "$src" ]; then info "login: falta el fondo en $src"; return 0; fi
+  actual="$(awk -v g="$grupo" '$0==g{s=1;next} /^\[/{s=0} s && /^Image=/{sub(/^Image=/,"");v=$0} END{print v}' "$pl" 2>/dev/null)"
+  if marca_ok plasmalogin "$actual" && marca_ok archivo plasmalogin-fondo "$R$dst"; then
+    install -Dm644 "$src" "$R$dst" && marca_ok registrar plasmalogin-fondo "$R$dst" || true
+    [ -f "$pl" ] || : > "$pl"
+    awk -v g="$grupo" -v v="Image=file://$dst" '
+      $0==g {print; print v; s=1; hecho=1; next}
+      /^\[/ {s=0}
+      s && /^Image=/ {next}
+      {print}
+      END {if (!hecho) {print ""; print g; print v}}' "$pl" > "$pl.tmp" && mv -f "$pl.tmp" "$pl"
+    chmod 644 "$pl"
+    marca_ok registrar plasmalogin "file://$dst" || true
+    ok "Plasma Login: fondo Eclipse"
+  else info "login: el fondo de Plasma Login es tuyo, no lo cambio"; fi
 }
 handoff() {
   ok "Listo. Cierra sesión y vuelve a entrar — un asistente (chemarchy-wizard) te ayudará a terminar."
