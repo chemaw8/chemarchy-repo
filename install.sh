@@ -303,12 +303,19 @@ EOF
     rm -f "$R/var/lib/chemarchy/marca/plymouth-pendiente"
     cambio=1
   else info "Plymouth: el tema $ply no está en el destino (¿falta chemarchy-themes?)"; fi
-  # regenerar el initramfs DEL DESTINO (corre dentro del chroot de Calamares); limine-update además rehace las
-  # imágenes que arranca Limine en /boot/<machine-id>/ (mkinitcpio -P solo cubre /boot/initramfs-*).
+  # regenerar el initramfs DEL DESTINO (corre dentro del chroot de Calamares). Hay DOS juegos y hacen falta los dos
+  # (ISO E2E de Corona, 2026-11-16): mkinitcpio -P rehace /boot/initramfs-*.img, que es el que usa la entrada
+  # «/chemarchy» de Limine (la primera, la de arranque por defecto); limine-update rehace /boot/<machine-id>/…
+  # Con solo limine-update, la entrada por defecto arrancaba con el initramfs viejo y el logo de Arch.
   if [ "$cambio" = 1 ]; then
-    if command -v limine-update >/dev/null 2>&1 && limine-update >>"$LOGFILE" 2>&1; then ok "initramfs regenerado (limine-update)"
-    elif command -v mkinitcpio >/dev/null 2>&1 && mkinitcpio -P >>"$LOGFILE" 2>&1; then ok "initramfs regenerado (mkinitcpio -P)"
-    else warn "no pude regenerar el initramfs: el splash sale en el siguiente update del kernel"
+    local falta=""
+    if command -v mkinitcpio >/dev/null 2>&1 && mkinitcpio -P >>"$LOGFILE" 2>&1; then ok "initramfs regenerado (mkinitcpio -P)"
+    else falta="mkinitcpio -P"; fi
+    if command -v limine-update >/dev/null 2>&1; then
+      if limine-update >>"$LOGFILE" 2>&1; then ok "imágenes de Limine regeneradas (limine-update)"; else falta="${falta:+$falta y }limine-update"; fi
+    fi
+    # cada una cuenta: mkinitcpio -P es el de la entrada por defecto; si falla, se avisa aunque limine-update pase
+    if [ -n "$falta" ]; then warn "no pude regenerar ($falta): el splash sale en el siguiente update del kernel"
       mkdir -p "$R/var/lib/chemarchy/marca" && : > "$R/var/lib/chemarchy/marca/plymouth-pendiente"; fi
   fi
   # ── Plasma Login: fondo Eclipse ──
